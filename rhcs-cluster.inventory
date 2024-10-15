@@ -1,0 +1,6 @@
+[{{ plan }}]
+{% for num in range(0,nodes) %}
+{{ plan }}-node-{{ num }}.{{ storage_frontend_network_domain }} ansible_connection=ssh ansible_user=cloud-user ansible_password={{ password }} ansible_host={{ storage_frontend_network_domain_cidr_3 }}.{{ ip_offset + num }} ansible_host_key_checking=false
+{% endfor %}
+[admin]
+{{ plan }}-node-{{ nodes - nodes }}.{{ storage_frontend_network_domain }} ansible_connection=ssh ansible_user=cloud-user ansible_password={{ password }} ansible_host={{ storage_frontend_network_domain_cidr_3 }}.{{ ip_offset }} ansible_host_key_checking=false

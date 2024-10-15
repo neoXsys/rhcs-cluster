@@ -1,0 +1,126 @@
+## Plan Variables
+parameters:
+  # Provide via _CLI_ARGUMENT_ or _RANDOM_NAME_ will be assigned
+  plan: rhcs-cluster
+  # Define dedicated RHCS Cluster Access network (Storage Frontend)
+  # Note: Use for dedicated NTP Server & DNS Server running on libvirt / KVM Virtualization host  
+  storage_frontend_network_name: storage
+  storage_frontend_network_domain: redhat.lab
+  storage_frontend_network_domain_ip: 172.18.0.1
+  storage_frontend_network_domain_cidr: 172.18.0.0/24
+  storage_frontend_network_domain_cidr_3: 172.18.0
+  # Define dedicated RHCS Cluster network (Storage Backend)
+  storage_backend_network_name: storage-mgmt
+  storage_backend_network_domain_cidr: 172.20.0.0/24
+  storage_backend_network_domain_cidr_3: 172.20.0
+  
+  # Define default RHEL Image for RHCS Cluster
+  # Note:TESTED: RHEL 9.4 | Get Red Hat Enterprise Linux KVM Guest Image: https://access.redhat.com/downloads/content/rhel
+  image_name: rhel94
+  image_url: _RHEL_IMAGE_URL_
+  # Define Red Hat Registration Credentials
+  rhnuser: _RHN_USER_
+  rhnpassword: _RHN_PASSWORD_
+  # Define VM(s) / Node(s) OS default access root password and default password for any user
+  rootpassword: redhat
+  password: redhat
+  # Define RHCS Cluster Variables
+  # Number RHCS Cluster VM(s) / Node(s), Including Administrator (admin) node
+  nodes: 3
+  # IP Assignment Start Range, No Single Digit Allowed
+  ip_offset: 10
+  # Number of RHCS Cluster RADOS GW (RGW - Ceph Object Gateway) VM(s) / Node(s), out of Total RHCS Cluster RGW VM(s) / Node(s)
+  rgw: 2
+  # Number of RHCS Cluster Metadata Server (MDS) VM(s) / Node(s), out of Total RHCS Cluster RGW VM(s) / Node(s)
+  mds: 2
+
+## Create dedicated RHCS Cluster Access network (Storage Frontend) 
+{{ storage_frontend_network_name }}:
+  type: network
+  domain: {{ storage_frontend_network_domain }}
+  cidr: {{ storage_frontend_network_domain_cidr }}
+  dns: true
+
+## Create network cluster network (Storage Backend)
+{{ storage_backend_network_name }}:
+  type: network
+  cidr: {{ storage_backend_network_domain_cidr }}
+
+## Create dedicated DNS Server for RHCS Cluster access network (Storage Frontend)
+dns-{{ plan }}.{{ storage_frontend_network_domain }}:
+  type: dns
+  net: {{ storage_frontend_network_name }}
+  ip: {{ storage_frontend_network_domain_ip }}
+
+## Create and attach dedicated libvirt pool for plan
+{{ plan }}:
+  type: pool
+  path: /var/lib/libvirt/images/{{ plan }}
+
+## Upload Red Hat Enterprise Linux (rhel) Image
+{{ image_name }}:
+  name: {{ image_name }}
+  type: image
+  url: {{ image_url }}
+
+## Create RHCS VM(s) / Node(s) HW & OS Profile(s) with default configuration(s)
+{{ image_name }}-{{ plan }}-c4m16d100:
+  type: profile
+  pool: {{ plan }}
+  image: {{ image_name }}
+  uefi_legacy: true
+  numcpus: 8
+  memory: 16000
+  # VM(s) / Node(s) OS rootdisk & Extra disks for RHCS OSDs
+  disks: [100]
+  # Require manual IP entry in each VM defination
+  reserveip: true
+  # Require to create /etc/hosts entries on libvirt / KVM Virtualization host
+  reservehost: true
+  # Require dhcp on network
+  reservedns: true
+  sharedkey: true
+  keys: [/root/.ssh/id_rsa.pub]
+  privatekey: true
+  rhnuser: {{ rhnuser }}
+  rhnpassword: {{ rhnpassword }}
+  yamlinventory: true
+  enableroot: true
+  rootpassword: {{ rootpassword }}
+  autostart: true
+  cmds:
+  - sudo sh -c "echo {{ password | default('redhat') }} | passwd --stdin cloud-user"
+  - dnf install ansible-core python3 chrony lvm2 podman tmux vim mc -y
+
+## Create RHCS Cluster VM(s) / Node(s) without RHCS Cluster Administrator (admin) VM(s) / Node(s)
+{% for number in range(0, nodes) %}
+{{ plan }}-node-{{ number }}.{{ storage_frontend_network_domain }}:
+  profile: {{ image_name }}-{{ plan }}-c4m16d100
+  # Override  VM(s) / Node(s) HW & OS Profile(s) configuration(s)
+  disks: [100,100,100]
+  nets:
+  - name: {{ storage_frontend_network_name }}
+    ip: {{ storage_frontend_network_domain_cidr_3 }}.{{ ip_offset + number}}
+    reserveip: true
+  - name: {{ storage_backend_network_name }}
+    ip: {{ storage_backend_network_domain_cidr_3 }}.{{ ip_offset + number }}
+    reserveip: true
+  {% if number == 0 %}
+  files:
+  - 00_Bootstrap_RHCS-Cluster.sh
+  - RedHatRegistryCredentials.json
+  - rhcs-cluster.inventory
+  - rhcs-cluster-service-config-spec.yaml  
+  - ceph-external-cluster-details-exporter.py
+  {% endif %}
+  cmds:
+  - sudo sh -c "echo {{ password | default('redhat') }} | passwd --stdin cloud-user"
+  - dnf install ansible-core python3 chrony lvm2 podman tmux vim mc -y
+  - echo -e "server {{ storage_frontend_network_domain_ip }} iburst\ndriftfile /var/lib/chrony/drift\nmakestep 1.0 3\nrtcsync\nkeyfile /etc/chrony.keys\nleapsectz right/UTC\nlogdir /var/log/chrony" > /etc/chrony.conf
+  - systemctl restart chronyd
+  - sed -i "s/SELINUX=enforcing/SELINUX=permissive/" /etc/selinux/config
+  - setenforce 0
+  {% if number == 0 %}
+  - bash  /root/00_Bootstrap_RHCS-Cluster.sh
+  {% endif %}
+{% endfor %} 

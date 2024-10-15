@@ -1,0 +1,55 @@
+{% set rhcs_nodes = range(0,nodes) | list %}
+{% set selected_rhcs_rgw_nodes = rhcs_nodes[:rgw] %}
+{% set rmaining_rhcs_rgw_nodes = rhcs_nodes[rgw:] %}
+{% set selected_rhcs_mds_nodes = rmaining_rhcs_rgw_nodes[:mds] %}
+{% set rmaining_rhcs_rgw_nodes = rhcs_nodes[mds:] %}
+{% for counter_rhcs_nodes in range(0,nodes) %}
+service_type: host
+addr: {{ storage_frontend_network_domain_cidr_3 }}.{{ ip_offset + counter_rhcs_nodes}}
+hostname: {{ plan }}-node-{{ counter_rhcs_nodes }}.{{ storage_frontend_network_domain }}
+labels:
+  {% if counter_rhcs_nodes == 0 %}
+  - _admin
+  {% endif %}
+  - mon
+  - mgr
+  - osd
+  - rbd
+  {% for counter_rgw in selected_rhcs_rgw_nodes %}
+  {% if counter_rgw == counter_rhcs_nodes %}
+  - rgw
+  {% endif %}
+  {% endfor %}
+  {% for counter_mds in selected_rhcs_mds_nodes %}
+  {% if counter_mds == counter_rhcs_nodes %}
+  - mds
+  {% endif %}
+  {% endfor %}
+--- 
+{% endfor %}
+service_type: osd
+service_id: all-available-devices
+service_name: osd.all-available-devices
+placement:
+  label: "osd"
+spec:
+  data_devices:
+    all: true
+---
+service_type: rgw
+service_id: rhodf-rgw-backend
+placement:
+  label: "rgw"
+  count_per_host: 2
+spec:
+  rgw_realm: default
+  rgw_zone: default
+  rgw_frontend_port: 8888
+extra_container_args:
+    - --stop-timeout=120
+---
+service_type: mds
+service_id: rhodf-cephfs-backend 
+placement: 
+  label: "mds"
+  count: {{ mds }}
