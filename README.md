@@ -125,5 +125,22 @@ Listing Networks...
 | rhcs-cluster-node-3.redhat.lab |   up   | 172.18.0.13 | rhel94 | rhcs-cluster | rhel94-rhcs-cluster-c4m16d100 |
 +--------------------------------+--------+-------------+--------+--------------+-------------------------------+
 ```
+### Post Deployment RHCS Service Layout
+```
+NAME                       PORTS        RUNNING  REFRESHED  AGE  PLACEMENT
+alertmanager               ?:9093,9094      1/1  5s ago     89m  count:1
+ceph-exporter                               4/4  7m ago     89m  *
+crash                                       4/4  7m ago     89m  *
+grafana                    ?:3000           1/1  5s ago     89m  count:1
+mds.rhodf-cephfs-backend                    2/2  7m ago     88m  count:2;label:mds
+mgr                                         3/3  6m ago     88m  count:3
+mon                                         3/3  7m ago     88m  count:3
+node-exporter              ?:9100           4/4  7m ago     89m  *
+node-proxy                                  0/0  -          83m  *
+osd.all-available-devices                     8  7m ago     88m  label:osd
+prometheus                 ?:9095           1/1  5s ago     89m  count:1
+rgw.rhodf-rgw-backend      ?:8888           4/4  6m ago     85m  count-per-host:2;label:rgw
+```
+![RHCS Cluster 4 VM(s) / Node(s) Colocated Deployment Example With Service Layout](https://github.com/neoXsys/rhcs-cluster/blob/a8f86047533c5623a93cf040e94064c652e3535b/RHCS-Cluster-4-Nodes-Colocated-Example-Architecture.png)
 ### Explore kcli plan for more customization
 REF: https://docs.redhat.com/en/documentation/red_hat_ceph_storage/7
