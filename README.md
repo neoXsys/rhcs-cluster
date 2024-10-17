@@ -1,5 +1,5 @@
 ###  RHCS Cluster On KVM Infra Via kcli - Hybrid Infra Management Tool
-![RHCS Cluster Colocated Cephadm Deployment Architecture HLD]()
+![RHCS Cluster Colocated Cephadm Deployment Architecture HLD](https://github.com/neoXsys/rhcs-cluster/blob/75144192c3c88507cde297cd5a34fdf0759e5538/RHCS-Cluster-Colocated-Cephadm-Deployment-Architecture-HLD.png)
 #### Baremetal Node Information | Hypervisor Host (TESTED):
 * Dell R440 | 40 Core Cpu | 256 GB Ram
 * HOST OS: RHEL 9.4 
