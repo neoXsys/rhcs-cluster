@@ -2,7 +2,8 @@
 ![RHCS Cluster Colocated Cephadm Deployment Architecture HLD](https://github.com/neoXsys/rhcs-cluster/blob/75144192c3c88507cde297cd5a34fdf0759e5538/RHCS-Cluster-Colocated-Cephadm-Deployment-Architecture-HLD.png)
 #### Baremetal Node Information | Hypervisor Host (TESTED):
 * Dell R440 | 40 Core Cpu | 256 GB Ram
-* HOST OS: RHEL 9.4 
+* HOST OS: RHEL 9.4
+* Red Hat CEPH Storage (RHCS)
 * Reference: 
   * <https://github.com/karmab/kcli>
   * <https://kcli.readthedocs.io/en/latest/>
@@ -100,13 +101,12 @@ Cluster fsid: bb1b27be-871b-11ef-9a25-525400456f2b
 | /var/lib/libvirt/images/rhel94       |
 +--------------------------------------+
 Listing Networks...
-+--------------+--------+------------------+------+--------------+------+
-| Network      |  Type  |       Cidr       | Dhcp |    Domain    | Mode |
-+--------------+--------+------------------+------+--------------+------+
-| default      | routed | 192.168.122.0/24 | True |   default    | nat  |
-| storage      | routed |  172.18.0.0/24   | True |  redhat.lab  | nat  |
-| storage-mgmt | routed |  172.20.0.0/24   | True | storage-mgmt | nat  |
-+--------------+--------+------------------+------+--------------+------+
++---------------+--------+------------------+-------+------------+------+
+| Network       |  Type  |       Cidr       |  Dhcp |   Domain   | Mode |
++---------------+--------+------------------+-------+------------+------+
+| storage       | routed |  172.18.0.0/24   | False | redhat.lab | nat  |
+| storageMgmt   | routed |  172.20.0.0/24   | False | redhat.lab | nat  |
++---------------+--------+------------------+-------+------------+------+
 +--------------------------------+------+-----+-----------------------+
 |             Entry              | Type | TTL |          Data         |
 +--------------------------------+------+-----+-----------------------+
