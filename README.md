@@ -71,7 +71,7 @@ kcli create pool -p /var/lib/libvirt/images default
 ```
 #### Create RHCS Cluster - Colocated
 ```
-kcli create plan -f rhcs-cluster.redhat.lab.kcli -P "plan=rhcs-cluster" -P "nodes=4" \
+kcli create plan -f rhcs-cluster.redhat.lab.kcli -P "plan=rhcs-cluster" -P "nodes=4" -P "ip_offset=10" \
 		 -P image_url="_RHEL_IMAGE_URL_" \
 		 -P  rhnuser="_RHN_USER_" \
 		 -P rhnpassword="_RHN_PASSWORD_"
