@@ -9,10 +9,14 @@ parameters:
   storage_frontend_network_domain_ip: 172.18.0.1
   storage_frontend_network_domain_cidr: 172.18.0.0/24
   storage_frontend_network_domain_cidr_3: 172.18.0
+  storage_frontend_network_domain_netmask: 255.255.255.0
   # Define dedicated RHCS Cluster network (Storage Backend)
-  storage_backend_network_name: storage-mgmt
+  storage_backend_network_name: storageMgmt
+  storage_backend_network_domain: redhat.lab
+  storage_backend_network_domain_ip: 172.20.0.1
   storage_backend_network_domain_cidr: 172.20.0.0/24
   storage_backend_network_domain_cidr_3: 172.20.0
+  storage_backend_network_domain_netmask: 255.255.255.0
   
   # Define default RHEL Image for RHCS Cluster
   # Note:TESTED: RHEL 9.4 | Get Red Hat Enterprise Linux KVM Guest Image: https://access.redhat.com/downloads/content/rhel
@@ -27,8 +31,8 @@ parameters:
   # Define RHCS Cluster Variables
   # Number RHCS Cluster VM(s) / Node(s), Including Administrator (admin) node
   nodes: 3
-  # IP Assignment Start Range, No Single Digit Allowed
-  ip_offset: 10
+  # IP Assignment Start Range (2,(254 - nodes)
+  ip_offset: 2
   # Number of RHCS Cluster RADOS GW (RGW - Ceph Object Gateway) VM(s) / Node(s), out of Total RHCS Cluster RGW VM(s) / Node(s)
   rgw: 2
   # Number of RHCS Cluster Metadata Server (MDS) VM(s) / Node(s), out of Total RHCS Cluster RGW VM(s) / Node(s)
@@ -40,11 +44,15 @@ parameters:
   domain: {{ storage_frontend_network_domain }}
   cidr: {{ storage_frontend_network_domain_cidr }}
   dns: true
+  dhcp: false
 
 ## Create network cluster network (Storage Backend)
 {{ storage_backend_network_name }}:
   type: network
+  domain: {{ storage_frontend_network_domain }}
   cidr: {{ storage_backend_network_domain_cidr }}
+  dns: true
+  dhcp: false
 
 ## Create dedicated DNS Server for RHCS Cluster access network (Storage Frontend)
 dns-{{ plan }}.{{ storage_frontend_network_domain }}:
@@ -101,10 +109,12 @@ dns-{{ plan }}.{{ storage_frontend_network_domain }}:
   nets:
   - name: {{ storage_frontend_network_name }}
     ip: {{ storage_frontend_network_domain_cidr_3 }}.{{ ip_offset + number}}
-    reserveip: true
+    netmask: {{ storage_frontend_network_domain_netmask }}
+    gateway: {{ storage_frontend_network_domain_ip }}
   - name: {{ storage_backend_network_name }}
     ip: {{ storage_backend_network_domain_cidr_3 }}.{{ ip_offset + number }}
-    reserveip: true
+    netmask: {{ storage_backend_network_domain_netmask }}
+    gateway: {{ storage_backend_network_domain_ip }}
   {% if number == 0 %}
   files:
   - 00_Bootstrap_RHCS-Cluster.sh
