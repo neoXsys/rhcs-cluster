@@ -29,9 +29,9 @@ parameters:
   rootpassword: redhat
   password: redhat
   # Define RHCS Cluster Variables
-  # Number RHCS Cluster VM(s) / Node(s), Including Administrator (admin) node
-  nodes: 3
-  # IP Assignment Start Range (2,(254 - nodes)
+  # Minimum Number RHCS Cluster VM(s) / Node(s), Including Administrator (admin) node
+  nodes: 4
+  # IP Assignment Start Range (2 To (254 - nodes)
   ip_offset: 2
   # Number of RHCS Cluster RADOS GW (RGW - Ceph Object Gateway) VM(s) / Node(s), out of Total RHCS Cluster RGW VM(s) / Node(s)
   rgw: 2

@@ -22,7 +22,7 @@ cephadm bootstrap 	--cluster-network {{ storage_backend_network_domain_cidr }} \
 			--initial-dashboard-password redhat \
 			--dashboard-password-noupdate \
 			--cleanup-on-failure \
-			--apply-spec /root/{{ plan }}-service-config-spec.yaml \
+			--apply-spec /root/rhcs-cluster-service-config-spec.yaml \
 			| tee -a /root/cephadm.log
 
 # Set default mon deamon count from 5 to 3
@@ -34,6 +34,7 @@ ceph orch apply mgr  --placement=3
 # Disable pool delete restrictions
 ceph tell mon.\* injectargs '--mon-allow-pool-delete=true'
 
+## Create Block(RBD), Object(RGW), File (CephFS) Backends for RHOCP::RHODF
 # Create & attach rbd pool with 2 replicaiton count rbd Block Service
 ceph osd pool create rhodf-rbd-backend replicated --size 2 --autoscale_mode on
 ceph osd pool application enable rhodf-rbd-backend rbd
@@ -47,11 +48,12 @@ ceph fs new rhodf-cephfs-backend rhodf-cephfs-backend-meta-pool rhodf-cephfs-bac
 grep "Cluster fsid\|URL\|User\|Password" /root/cephadm.log > /root/{{ plan }}-dashboard.cred
 
 # Export RHCS Cluster json file for integration with RHOCP::RHODF
-#python3 ./ceph-external-cluster-details-exporter.py	--rbd-data-pool-name rhodf-rbd-backend \
+# python3 ./ceph-external-cluster-details-exporter.py	--rbd-data-pool-name rhodf-rbd-backend \
 #							--rgw-endpoint rhcs-cluster-node-0.redhat.lab:8888 --rgw-skip-tls true 
 #							--cephfs-filesystem-name rhodf-cephfs-backend \
 #							--cephfs-metadata-pool-name rhodf-cephfs-backend-meta-pool \
 #							--cephfs-data-pool-name rhodf-cephfs-backend-data-pool \
-#							> ceph-external-cluster-details-exporter.json
+#							--run-as-user client.ocs
+#							> ceph-external-cluster-details-exporter-for-rhocp.json
 
 exit 0
