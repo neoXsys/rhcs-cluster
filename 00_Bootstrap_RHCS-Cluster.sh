@@ -41,6 +41,10 @@ ceph tell mon.\* injectargs '--mon-allow-pool-delete=true'
 #ceph config set global osd_pool_default_size 2
 #ceph config set global osd_pool_default_min_size 1
 
+# Delete / Redeploy the RGW Service with a Label Constraint
+ceph orch rm rgw.rhodf-rgw-backend
+ceph orch apply rgw rhodf-rgw-backend --placement="label:rgw" --port=8888
+
 ## Create Block(RBD), Object(RGW), File (CephFS) Backends for RHOCP::RHODF
 # Create & attach rbd pool with 2 replicaiton count rbd Block Service
 ceph osd pool create rhodf-rbd-backend replicated --size 2 --autoscale_mode on
