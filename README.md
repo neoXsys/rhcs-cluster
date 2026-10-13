@@ -2,8 +2,8 @@
 ![RHCS Cluster Colocated Cephadm Deployment Architecture HLD](https://github.com/neoXsys/rhcs-cluster/blob/75144192c3c88507cde297cd5a34fdf0759e5538/RHCS-Cluster-Colocated-Cephadm-Deployment-Architecture-HLD.png)
 #### Baremetal Node Information | Hypervisor Host (TESTED):
 * Dell R440 | 40 Core Cpu | 256 GB Ram
-* HOST OS: RHEL 9.4
-* Red Hat CEPH Storage (RHCS)
+* Hypervisor HOST OS: RHEL 9.4 / RHEL 10.2
+* Red Hat CEPH Storage (RHCS) 7 & 9
 * Reference: 
   * <https://github.com/karmab/kcli>
   * <https://kcli.readthedocs.io/en/latest/>
@@ -19,13 +19,21 @@ dnf update -y
 dnf install tmux mc podman-docker bash-completion vim jq tar git yum-utils  -y
 ssh-keygen
 ```
-#### Install libvirt (KVM Virtualization):
+#### Install libvirt (KVM Virtualization) - RHEL 9.4:
 ```
 yum -y install libvirt libvirt-daemon-driver-qemu qemu-kvm
 usermod -aG qemu,libvirt $(id -un)
 newgrp libvirt
 systemctl enable --now libvirtd
 systemctl status libvirtd
+```
+#### Install libvirt (KVM Virtualization) - RHEL 10.2:
+```
+yum install -y qemu-kvm libvirt virt-install virt-viewer
+systemctl disable --now libvirtd.service libvirtd.socket libvirtd-ro.socket libvirtd-admin.socket # Disable Monolithic Service (If Applicable)
+systemctl enable --now virtqemud.socket virtnetworkd.socket virtstoraged.socket virtnodedevd.socket virtnwfilterd.socket virtsecretd.socket virtinterfaced.socket virtproxyd.socket 
+systemctl list-units 'virt*' --all
+sudo virt-host-validate qemu
 ```
 #### Install Local NTP Server:
 ```
@@ -72,9 +80,10 @@ kcli create pool -p /var/lib/libvirt/images default
 #### Create RHCS Cluster - Colocated
 ```
 kcli create plan -f rhcs-cluster.redhat.lab.kcli -P "plan=rhcs-cluster" -P "nodes=4" -P "ip_offset=10" \
-		 -P image_url="_RHEL_IMAGE_URL_" \
-		 -P  rhnuser="_RHN_USER_" \
-		 -P rhnpassword="_RHN_PASSWORD_"
+            -P image_url="_RHEL_IMAGE_URL_" \
+            -P image_name="_RHEL_IMAGE_NAME_" \
+            -P  rhnuser="_RHN_USER_" \
+            -P rhnpassword="_RHN_PASSWORD_"
 ```
 #### After Few Minutes Later, Access RHCS Cluster Dashboard Credentials
 - **NOTE: By Default node-0 is Bootstrap & Admin Node**
@@ -88,6 +97,8 @@ Cluster fsid: bb1b27be-871b-11ef-9a25-525400456f2b
 #### Example Expected Output From Hypervisor Host
 ```
 # kcli list pools && kcli list images && kcli list network && kcli list dns redhat.lab && kcli list vms
+```
+```
 +--------------+--------------------------------------+
 | Pool         |                 Path                 |
 +--------------+--------------------------------------+
@@ -124,6 +135,18 @@ Listing Networks...
 | rhcs-cluster-node-2.redhat.lab |   up   | 172.18.0.12 | rhel94 | rhcs-cluster | rhel94-rhcs-cluster-c4m16d100 |
 | rhcs-cluster-node-3.redhat.lab |   up   | 172.18.0.13 | rhel94 | rhcs-cluster | rhel94-rhcs-cluster-c4m16d100 |
 +--------------------------------+--------+-------------+--------+--------------+-------------------------------+
+```
+```
+#### RHEL 10.1 & RHCS 9
+```
++--------------------------------+--------+-------------+---------+--------------+--------------------------------+
+|              Name              | Status |      Ip     |  Source |     Plan     |            Profile             |
++--------------------------------+--------+-------------+---------+--------------+--------------------------------+
+| rhcs-cluster-node-0.redhat.lab |   up   | 172.18.0.10 | rhel101 | rhcs-cluster | rhel101-rhcs-cluster-c4m16d100 |
+| rhcs-cluster-node-1.redhat.lab |   up   | 172.18.0.11 | rhel101 | rhcs-cluster | rhel101-rhcs-cluster-c4m16d100 |
+| rhcs-cluster-node-2.redhat.lab |   up   | 172.18.0.12 | rhel101 | rhcs-cluster | rhel101-rhcs-cluster-c4m16d100 |
+| rhcs-cluster-node-3.redhat.lab |   up   | 172.18.0.13 | rhel101 | rhcs-cluster | rhel101-rhcs-cluster-c4m16d100 |
++--------------------------------+--------+-------------+---------+--------------+--------------------------------+
 ```
 ### Post Deployment RHCS Service Layout
 ```

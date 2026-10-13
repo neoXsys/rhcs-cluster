@@ -2,9 +2,13 @@
 
 set -eux
 
-# Enable repository for RHCS Cluster Deployment Tools
-subscription-manager repos --enable=rhceph-7-tools-for-rhel-9-x86_64-rpms
-dnf install cephadm-ansible cephadm -y
+# Enable repository for RHCS Cluster Deployment Tools | RHCS 7 @ RHEL 9
+#subscription-manager repos --enable=rhceph-7-tools-for-rhel-9-x86_64-rpms
+#dnf install cephadm-ansible cephadm -y
+
+# Enable repository for RHCS Cluster Deployment Tools | RHCS 9 @ RHEL 10
+subscription-manager repos --enable=rhceph-9-tools-for-rhel-10-x86_64-rpms
+dnf install cephadm-ansible cephadm sshpass ceph-common -y
 
 # Prepare all host for RHCS Cluster Deployment
 cd /usr/share/cephadm-ansible
@@ -21,7 +25,6 @@ cephadm bootstrap 	--cluster-network {{ storage_backend_network_domain_cidr }} \
 			--initial-dashboard-user admin \
 			--initial-dashboard-password redhat \
 			--dashboard-password-noupdate \
-			--cleanup-on-failure \
 			--apply-spec /root/rhcs-cluster-service-config-spec.yaml \
 			| tee -a /root/cephadm.log
 
@@ -33,6 +36,10 @@ ceph orch apply mgr  --placement=3
 
 # Disable pool delete restrictions
 ceph tell mon.\* injectargs '--mon-allow-pool-delete=true'
+
+# Config to stablize the cluster in lab
+#ceph config set global osd_pool_default_size 2
+#ceph config set global osd_pool_default_min_size 1
 
 ## Create Block(RBD), Object(RGW), File (CephFS) Backends for RHOCP::RHODF
 # Create & attach rbd pool with 2 replicaiton count rbd Block Service

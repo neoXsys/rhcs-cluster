@@ -20,7 +20,7 @@ parameters:
   
   # Define default RHEL Image for RHCS Cluster
   # Note:TESTED: RHEL 9.4 | Get Red Hat Enterprise Linux KVM Guest Image: https://access.redhat.com/downloads/content/rhel
-  image_name: rhel94
+  image_name: _RHEL_IMAGE_NAME_
   image_url: _RHEL_IMAGE_URL_
   # Define Red Hat Registration Credentials
   rhnuser: _RHN_USER_
@@ -44,7 +44,7 @@ parameters:
   domain: {{ storage_frontend_network_domain }}
   cidr: {{ storage_frontend_network_domain_cidr }}
   dns: true
-  dhcp: false
+  dhcp: true
 
 ## Create network cluster network (Storage Backend)
 {{ storage_backend_network_name }}:
@@ -52,7 +52,7 @@ parameters:
   domain: {{ storage_frontend_network_domain }}
   cidr: {{ storage_backend_network_domain_cidr }}
   dns: true
-  dhcp: false
+  dhcp: true
 
 ## Create dedicated DNS Server for RHCS Cluster access network (Storage Frontend)
 dns-{{ plan }}.{{ storage_frontend_network_domain }}:
