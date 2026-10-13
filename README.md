@@ -165,4 +165,7 @@ rgw.rhodf-rgw-backend      ?:8888           4/4  6m ago     85m  count-per-host:
 ```
 ![RHCS Cluster 4 VM(s) / Node(s) Colocated Deployment Example With Service Layout](https://github.com/neoXsys/rhcs-cluster/blob/a8f86047533c5623a93cf040e94064c652e3535b/RHCS-Cluster-4-Nodes-Colocated-Example-Architecture.png)
 ### Explore kcli plan for more customization
+#### Red Hat CEPH Storage - 7
 REF: https://docs.redhat.com/en/documentation/red_hat_ceph_storage/7
+#### Red Hat CEPH Storage - 9
+REF: https://docs.redhat.com/en/documentation/red_hat_ceph_storage/9
