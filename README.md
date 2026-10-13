@@ -19,7 +19,7 @@ dnf update -y
 dnf install tmux mc podman-docker bash-completion vim jq tar git yum-utils  -y
 ssh-keygen
 ```
-#### Install libvirt (KVM Virtualization) - RHEL 9.4:
+#### Install libvirt (KVM Virtualization) - RHEL 9.x :
 ```
 yum -y install libvirt libvirt-daemon-driver-qemu qemu-kvm
 usermod -aG qemu,libvirt $(id -un)
@@ -27,7 +27,7 @@ newgrp libvirt
 systemctl enable --now libvirtd
 systemctl status libvirtd
 ```
-#### Install libvirt (KVM Virtualization) - RHEL 10.2:
+#### Install libvirt (KVM Virtualization) - RHEL 10.x :
 ```
 yum install -y qemu-kvm libvirt virt-install virt-viewer
 systemctl disable --now libvirtd.service libvirtd.socket libvirtd-ro.socket libvirtd-admin.socket # Disable Monolithic Service (If Applicable)
@@ -136,7 +136,7 @@ Listing Networks...
 | rhcs-cluster-node-3.redhat.lab |   up   | 172.18.0.13 | rhel94 | rhcs-cluster | rhel94-rhcs-cluster-c4m16d100 |
 +--------------------------------+--------+-------------+--------+--------------+-------------------------------+
 ```
-#### RHEL 10.1 & RHCS 9
+#### RHCS 9 @ RHEL 10.1
 ```
 +--------------------------------+--------+-------------+---------+--------------+--------------------------------+
 |              Name              | Status |      Ip     |  Source |     Plan     |            Profile             |
@@ -164,7 +164,8 @@ prometheus                 ?:9095           1/1  5s ago     89m  count:1
 rgw.rhodf-rgw-backend      ?:8888           4/4  6m ago     85m  count-per-host:2;label:rgw
 ```
 ![RHCS Cluster 4 VM(s) / Node(s) Colocated Deployment Example With Service Layout](https://github.com/neoXsys/rhcs-cluster/blob/a8f86047533c5623a93cf040e94064c652e3535b/RHCS-Cluster-4-Nodes-Colocated-Example-Architecture.png)
-### Explore kcli plan for more customization
+#### Explore kcli plan for more customization
+https://github.com/neoXsys/rhcs-cluster/blob/main/rhcs-cluster.redhat.lab.kcli
 #### Red Hat CEPH Storage - 7
 REF: https://docs.redhat.com/en/documentation/red_hat_ceph_storage/7
 #### Red Hat CEPH Storage - 9
